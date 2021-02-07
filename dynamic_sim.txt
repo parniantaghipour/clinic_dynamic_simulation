@@ -1,0 +1,64 @@
+MeanWaitingTimeSim <- function(arrivalTime, serviceTime, serviceTime2, patient_num)
+{
+  waitingTime <- rep(NA, patient_num)
+  waitingTime2 <- rep(NA, patient_num)
+  overallWaitingTime <- rep(NA, patient_num)
+
+  leavingTime <- rep(NA, patient_num)
+  leavingTime2 <- rep(NA, patient_num)
+
+  waitingTime[1] <- 0
+  waitingTime2[1] <- 0
+  
+  leavingTime[1] <- arrivalTime[1] + waitingTime[1] + serviceTime[1]
+
+  for (i in 2:patient_num)
+  {
+    waitingTime[i] <- max(0, leavingTime[i - 1] - arrivalTime[i])
+    leavingTime[i] <- arrivalTime[i] + waitingTime[i] + serviceTime[i]
+  }
+  leavingTime2[1] <- leavingTime[1] + waitingTime2[1] + serviceTime2[1]
+
+  for (i in 2:patient_num)
+  {
+    waitingTime2[i] <- max(0, leavingTime2[i - 1] - leavingTime[i])
+    leavingTime2[i] <- leavingTime[i] + waitingTime2[i] + serviceTime2[i]
+  }
+  for (i in 1:patient_num)
+  {
+    overallWaitingTime[i] <- waitingTime[i] + waitingTime2[i]
+ }
+  cat(" clinic will be close on", 4+(leavingTime2[patient_num]/60))
+  cat("\n doctor is free in the middle of the day for", (leavingTime2[patient_num] - arrivalTime[1] - sum(serviceTime2))/60 )
+  x = 1:patient_num
+  plot(x,overallWaitingTime/60)
+  meanWaitingTime <- mean(overallWaitingTime)
+  return(meanWaitingTime)
+}
+patient_num= 30
+fakeArrivalTimeCal <- function(patient_num){
+ fakeArrivalTime <- rexp( patient_num/5, 4/60)
+ for(i in 1:4){
+  fakeArrivalTime <- append(fakeArrivalTime , i+rexp( patient_num/5, 4/60))
+}
+return(fakeArrivalTime )
+}
+arrivalTime <- cumsum(fakeArrivalTimeCal(patient_num))
+plot(1:patient_num, arrivalTime/60)
+serviceTime <- rep(NA, patient_num)
+serviceTime2 <- rep(NA, patient_num)
+
+for(i in 1:patient_num){
+ u <- runif(1)
+ if (u<1/10){
+  serviceTime[i] = 2;
+  serviceTime2[i] = 10;
+}else{
+  serviceTime[i] = 5;
+  serviceTime2[i] = 15;
+}
+
+}
+
+meanWaitingTime <- MeanWaitingTimeSim(arrivalTime, serviceTime, serviceTime2, patient_num)
+cat( "\n On average people waited for", meanWaitingTime/60)
